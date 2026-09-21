@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CM Games</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            theme: {
+              black: '#000000',
+              bg: '#0b0c10',
+              card: '#1f2833',
+              cyan: '#66fcf1',
+              teal: '#45a29e'
+            }
+          },
+          animation: {
+            'glow-pulse': 'glowPulse 3s infinite alternate',
+          },
+          keyframes: {
+            glowPulse: {
+              '0%': { filter: 'drop-shadow(0 0 12px rgba(102, 252, 241, 0.25))' },
+              '100%': { filter: 'drop-shadow(0 0 28px rgba(102, 252, 241, 0.65))' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      cursor: none;
+      background-color: #0b0c10;
+      color: #c5c6c7;
+      overflow-x: hidden;
+    }
+
+    /* Pointer lock hidden cursor support */
+    body.pointer-locked, body.pointer-locked * {
+      cursor: none !important;
+    }
+
+    /* Custom Interactive Cursor Elements */
+    #cursor-dot {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 8px;
+      background-color: #66fcf1;
+      border-radius: 50%;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.15s ease, height 0.15s ease, background-color 0.15s ease;
+      box-shadow: 0 0 12px #66fcf1;
+    }
+
+    #cursor-ring {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 36px;
+      height: 36px;
+      border: 1.5px solid rgba(102, 252, 241, 0.4);
+      border-radius: 50%;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease-out, width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    /* Active Cursor Hover state */
+    .cursor-hover #cursor-dot {
+      width: 12px;
+      height: 12px;
+      background-color: #66fcf1;
+      box-shadow: 0 0 18px #66fcf1;
+    }
+    .cursor-hover #cursor-ring {
+      width: 50px;
+      height: 50px;
+      border-color: rgba(102, 252, 241, 0.8);
+      background-color: rgba(102, 252, 241, 0.08);
+    }
+
+    /* Shift Lock Center Target Crosshair */
+    #shiftlock-crosshair {
+      pointer-events: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 40;
+      display: none;
+    }
+
+    /* Dark Glass Styling */
+    .dark-glass {
+      background: rgba(31, 40, 51, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(102, 252, 241, 0.12);
+    }
+
+    .search-box {
+      background: rgba(31, 40, 51, 0.85);
+      border: 1px solid rgba(69, 162, 158, 0.3);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .search-box:focus-within {
+      border-color: #66fcf1;
+      box-shadow: 0 0 25px rgba(102, 252, 241, 0.25);
+    }
+
+    /* Tab Switch Animations */
+    .page-view {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .page-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.98);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans select-none antialiased bg-theme-bg text-gray-200">
+
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+
+  <!-- Animated Interactive Canvas Background -->
+  <canvas id="bg-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+  <!-- Top Navigation Header -->
+  <header class="relative z-50 w-full px-6 py-4 flex items-center justify-between dark-glass border-b border-theme-teal/20">
+    <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+      <div class="w-9 h-9 rounded-lg bg-theme-card border border-theme-cyan/30 flex items-center justify-center shadow-lg">
+        <i class="fa-solid fa-gamepad text-theme-cyan text-sm"></i>
+      </div>
+      <span class="text-xl font-black tracking-wider text-white">
+        CM <span class="text-theme-cyan">GAMES</span>
+      </span>
+    </div>
+
+    <!-- Nav Tabs (Home & Games only) -->
+    <nav class="flex items-center space-x-2 bg-theme-black/60 p-1.5 rounded-xl border border-theme-teal/20">
+      <button 
+        id="nav-home" 
+        onclick="switchTab('home')" 
+        class="px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 bg-theme-cyan/15 text-theme-cyan border border-theme-cyan/30 shadow-sm"
+      >
+        <i class="fa-solid fa-house mr-2 text-xs"></i>Home
+      </button>
+      <button 
+        id="nav-games" 
+        onclick="switchTab('games')" 
+        class="px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-400 hover:text-white hover:bg-white/5"
+      >
+        <i class="fa-solid fa-gamepad mr-2 text-xs"></i>Games
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main View Container -->
+  <div class="relative z-10 flex-grow flex flex-col w-full">
+    
+    <!-- PAGE 1: HOME (CM Games title + Search Bar ONLY) -->
+    <section id="page-home" class="page-view flex-grow flex flex-col items-center justify-center px-4 sm:px-6 max-w-4xl mx-auto w-full text-center py-12">
+      
+      <!-- Minimalist CM Games Title -->
+      <h1 class="text-6xl sm:text-8xl font-black tracking-tight mb-10 animate-glow-pulse">
+        <span class="text-theme-cyan">cm games</span>
+      </h1>
+
+      <!-- Browser Search Component -->
+      <div class="w-full max-w-2xl relative">
+        <form onsubmit="handleBrowserSearch(event)" class="search-box rounded-2xl p-2.5 flex items-center shadow-2xl relative">
+          
+          <!-- Engine Selector Dropdown -->
+          <div class="relative group border-r border-theme-teal/30 pr-2 mr-2">
+            <button 
+              type="button" 
+              id="engine-btn" 
+              onclick="toggleEngineMenu()" 
+              class="flex items-center space-x-2 px-3 py-2 rounded-xl bg-theme-bg/80 hover:bg-theme-bg text-xs font-medium text-gray-300 transition-colors"
+            >
+              <i id="engine-icon" class="fa-brands fa-google text-theme-cyan text-base"></i>
+              <span id="engine-name" class="hidden sm:inline">Google</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-gray-500"></i>
+            </button>
+
+            <!-- Dropdown Options -->
+            <div id="engine-menu" class="hidden absolute left-0 top-full mt-2 w-44 rounded-xl dark-glass border border-theme-teal/30 shadow-2xl p-1.5 z-50 text-left">
+              <button type="button" onclick="selectEngine('google')" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-gray-300 hover:bg-white/5 hover:text-theme-cyan transition-colors">
+                <i class="fa-brands fa-google w-4 text-theme-cyan"></i>
+                <span>Google</span>
+              </button>
+              <button type="button" onclick="selectEngine('duckduckgo')" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-gray-300 hover:bg-white/5 hover:text-theme-cyan transition-colors">
+                <i class="fa-solid fa-shield-halved w-4 text-orange-400"></i>
+                <span>DuckDuckGo</span>
+              </button>
+              <button type="button" onclick="selectEngine('bing')" class="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-xs text-gray-300 hover:bg-white/5 hover:text-theme-cyan transition-colors">
+                <i class="fa-brands fa-microsoft w-4 text-blue-400"></i>
+                <span>Bing</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Browser Search Bar Input -->
+          <input 
+            type="text" 
+            id="browser-search-input" 
+            placeholder="Search browser or type a URL..." 
+            class="w-full bg-transparent text-white placeholder-gray-500 focus:outline-none text-base sm:text-lg px-2"
+            autocomplete="off"
+          />
+
+          <!-- Submit Button -->
+          <button 
+            type="submit" 
+            class="px-5 py-2.5 rounded-xl bg-theme-cyan text-theme-black hover:bg-theme-teal hover:text-white text-sm font-bold transition-all duration-200 transform active:scale-95 ml-2 flex items-center space-x-2 shadow-lg shadow-theme-cyan/20"
+          >
+            <i class="fa-solid fa-arrow-right"></i>
+            <span class="hidden sm:inline">Search</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PAGE 2: GAMES -->
+    <section id="page-games" class="page-view page-hidden flex-grow flex flex-col w-full px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+      
+      <!-- Games Frame Box -->
+      <div id="game-wrapper" class="rounded-2xl overflow-hidden dark-glass border border-theme-teal/30 min-h-[620px] flex-grow shadow-2xl relative flex flex-col">
+        
+        <!-- Target container for games initialization -->
+        <div id="games" class="w-full h-full min-h-[600px] flex-grow"></div>
+
+        <!-- Roblox-style Shift Lock Center Crosshair Indicator -->
+        <div id="shiftlock-crosshair">
+          <div class="w-4 h-4 border border-theme-cyan/70 rounded-full flex items-center justify-center">
+            <div class="w-1 h-1 bg-theme-cyan rounded-full"></div>
+          </div>
+        </div>
+
+        <!-- Bottom Right Floating Game Controls -->
+        <div class="absolute bottom-4 right-4 z-40 flex items-center space-x-3 bg-theme-black/80 p-2 rounded-xl border border-theme-teal/30 shadow-2xl backdrop-blur-md">
+          
+          <!-- Shift Lock / Pointer Lock Toggle Button -->
+          <button 
+            id="shiftlock-btn"
+            onclick="toggleShiftLock()" 
+            class="px-3.5 py-2 rounded-lg bg-theme-card hover:bg-theme-teal/20 text-gray-300 hover:text-theme-cyan text-xs font-semibold border border-theme-teal/30 transition-all flex items-center space-x-2"
+            title="Lock cursor inside screen (Roblox Shift Lock style)"
+          >
+            <i class="fa-solid fa-lock text-theme-cyan"></i>
+            <span id="shiftlock-label" class="hidden sm:inline">Shift Lock: OFF</span>
+          </button>
+
+          <!-- Fullscreen Toggle Button -->
+          <button 
+            id="fullscreen-btn"
+            onclick="toggleFullscreen()" 
+            class="px-3.5 py-2 rounded-lg bg-theme-card hover:bg-theme-teal/20 text-gray-300 hover:text-theme-cyan text-xs font-semibold border border-theme-teal/30 transition-all flex items-center space-x-2"
+            title="Toggle Fullscreen Mode"
+          >
+            <i class="fa-solid fa-expand text-theme-cyan"></i>
+            <span class="hidden sm:inline">Fullscreen</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="relative z-10 w-full py-4 text-center text-xs text-gray-600 border-t border-theme-teal/10 bg-theme-black/60">
+    <p>&copy; 2026 CM Games. All dark rights reserved.</p>
+  </footer>
+
+  <!-- Script reference -->
+  <script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"></script>
+
+  <script>
+    let currentTab = 'home';
+    let currentEngine = 'google';
+    let isLuminInit = false;
+
+    const engines = {
+      google: { name: 'Google', icon: 'fa-brands fa-google', url: 'https://www.google.com/search?q=' },
+      duckduckgo: { name: 'DuckDuckGo', icon: 'fa-solid fa-shield-halved', url: 'https://duckduckgo.com/?q=' },
+      bing: { name: 'Bing', icon: 'fa-brands fa-microsoft', url: 'https://www.bing.com/search?q=' }
+    };
+
+    /* Switch Page View */
+    function switchTab(tab) {
+      if (tab === currentTab) return;
+      currentTab = tab;
+
+      const pageHome = document.getElementById('page-home');
+      const pageGames = document.getElementById('page-games');
+      const navHome = document.getElementById('nav-home');
+      const navGames = document.getElementById('nav-games');
+
+      if (tab === 'home') {
+        pageGames.classList.add('page-hidden');
+        pageHome.classList.remove('page-hidden');
+
+        navHome.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 bg-theme-cyan/15 text-theme-cyan border border-theme-cyan/30 shadow-sm";
+        navGames.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-400 hover:text-white hover:bg-white/5";
+      } else {
+        pageHome.classList.add('page-hidden');
+        pageGames.classList.remove('page-hidden');
+
+        navGames.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 bg-theme-cyan/15 text-theme-cyan border border-theme-cyan/30 shadow-sm";
+        navHome.className = "px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-400 hover:text-white hover:bg-white/5";
+
+        initGamesSDK();
+      }
+    }
+
+    /* Target Games initialization code */
+    function initGamesSDK() {
+      if (!isLuminInit && window.Lumin) {
+        try {
+          Lumin.init({
+            container: '#games',
+            theme: 'dark'
+          });
+          isLuminInit = true;
+        } catch (err) {
+          console.log('Container initialization status:', err);
+        }
+      }
+    }
+
+    /* Browser Search Engine Handler */
+    function toggleEngineMenu() {
+      document.getElementById('engine-menu').classList.toggle('hidden');
+    }
+
+    function selectEngine(key) {
+      currentEngine = key;
+      const engine = engines[key];
+      document.getElementById('engine-name').textContent = engine.name;
+      document.getElementById('engine-icon').className = `${engine.icon} text-theme-cyan text-base`;
+      document.getElementById('engine-menu').classList.add('hidden');
+    }
+
+    function handleBrowserSearch(e) {
+      e.preventDefault();
+      const input = document.getElementById('browser-search-input');
+      const query = input.value.trim();
+      if (!query) return;
+
+      const isUrl = /^https?:\/\//i.test(query) || (query.includes('.') && !query.includes(' '));
+      const targetUrl = isUrl ? (query.startsWith('http') ? query : `https://${query}`) : `${engines[currentEngine].url}${encodeURIComponent(query)}`;
+
+      window.open(targetUrl, '_blank');
+    }
+
+    /* Fullscreen Toggle */
+    function toggleFullscreen() {
+      const elem = document.getElementById('game-wrapper');
+      if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    /* Roblox-style Shift Lock / Pointer Lock Implementation */
+    function toggleShiftLock() {
+      const wrapper = document.getElementById('game-wrapper');
+      if (document.pointerLockElement === wrapper) {
+        document.exitPointerLock();
+      } else {
+        wrapper.requestPointerLock();
+      }
+    }
+
+    document.addEventListener('pointerlockchange', () => {
+      const wrapper = document.getElementById('game-wrapper');
+      const label = document.getElementById('shiftlock-label');
+      const crosshair = document.getElementById('shiftlock-crosshair');
+
+      if (document.pointerLockElement === wrapper) {
+        document.body.classList.add('pointer-locked');
+        label.textContent = "Shift Lock: ON";
+        crosshair.style.display = "block";
+      } else {
+        document.body.classList.remove('pointer-locked');
+        label.textContent = "Shift Lock: OFF";
+        crosshair.style.display = "none";
+      }
+    });
+
+    /* Custom Cursor Code */
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorRing = document.getElementById('cursor-ring');
+
+    let mouseX = -100, mouseY = -100;
+    let ringX = -100, ringY = -100;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursorDot.style.left = `${mouseX}px`;
+      cursorDot.style.top = `${mouseY}px`;
+    });
+
+    function renderCursor() {
+      ringX += (mouseX - ringX) * 0.15;
+      ringY += (mouseY - ringY) * 0.15;
+      cursorRing.style.left = `${ringX}px`;
+      cursorRing.style.top = `${ringY}px`;
+      requestAnimationFrame(renderCursor);
+    }
+    requestAnimationFrame(renderCursor);
+
+    // Interactive Hover Listeners
+    const interactiveQuery = 'a, button, input, select, [onclick], .cursor-pointer';
+    document.body.addEventListener('mouseover', (e) => {
+      if (e.target.closest(interactiveQuery)) {
+        document.body.classList.add('cursor-hover');
+      }
+    });
+    document.body.addEventListener('mouseout', (e) => {
+      if (e.target.closest(interactiveQuery)) {
+        document.body.classList.remove('cursor-hover');
+      }
+    });
+
+    /* Animated Dark Wave/Particle Background Canvas */
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    let particles = [];
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      initParticles();
+    }
+
+    function initParticles() {
+      particles = [];
+      const count = Math.floor((width * height) / 12000);
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          radius: Math.random() * 1.5 + 0.5,
+          alpha: Math.random() * 0.4 + 0.1
+        });
+      }
+    }
+
+    function animateBackground() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw subtle particles and wave links
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.fillStyle = `rgba(102, 252, 241, ${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Connect nearby particles
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 100) {
+            ctx.strokeStyle = `rgba(69, 162, 158, ${0.12 * (1 - dist / 100)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(animateBackground);
+    }
+
+    window.onload = function() {
+      resizeCanvas();
+      animateBackground();
+      window.addEventListener('resize', resizeCanvas);
+    };
+  </script>
+</body>
+</html>
