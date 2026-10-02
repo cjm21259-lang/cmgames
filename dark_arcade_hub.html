@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dark Arcade | Lumin Games Hub</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Lumin SDK CDN -->
+  <script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"></script>
+
+  <!-- Tailwind Configuration for custom theme colors -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            arcade: {
+              bg: '#07050f',
+              card: '#0d0d18',
+              surface: '#151326',
+              border: '#2a1a66',
+              brand: '#6842ff',
+              hover: '#8668ff',
+              accent: '#35fdff',
+              text: '#f9faff',
+              muted: '#878a9e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+    
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #07050f;
+      color: #f9faff;
+      min-height: 100vh;
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07050f;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a1a66;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6842ff;
+    }
+
+    /* Glassmorphism effects */
+    .glass-nav {
+      background: rgba(13, 13, 24, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Glow utility */
+    .glow-purple {
+      box-shadow: 0 0 20px rgba(104, 66, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen bg-arcade-bg text-arcade-text selection:bg-arcade-brand selection:text-white">
+
+  <!-- Navigation Header -->
+  <header class="sticky top-0 z-50 glass-nav border-b border-arcade-border/50 px-4 lg:px-8 py-3 transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-arcade-brand to-arcade-hover flex items-center justify-center font-black text-xl text-white shadow-lg group-hover:scale-105 transition-transform duration-200 glow-purple">
+          <i class="fa-solid font-black">L</i>
+        </div>
+        <div>
+          <span class="text-xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-arcade-text to-arcade-accent">
+            LUMIN<span class="text-arcade-brand">ARCADE</span>
+          </span>
+          <span class="block text-[10px] text-arcade-muted font-bold tracking-widest uppercase -mt-1">
+            Gaming Hub
+          </span>
+        </div>
+      </a>
+
+      <!-- User Profile / Auth Action Buttons -->
+      <div id="authContainer" class="flex items-center gap-3">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+    
+    <!-- Hero / Welcome Banner -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-arcade-surface via-arcade-card to-arcade-bg border border-arcade-border/60 p-6 sm:p-8 shadow-2xl">
+      <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-arcade-brand/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-12 -top-12 w-64 h-64 bg-arcade-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-arcade-brand/20 border border-arcade-brand/40 text-arcade-accent text-xs font-extrabold uppercase tracking-wider mb-3">
+          <i class="fa-solid fa-gamepad"></i> Instant Browser Games
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight mb-2">
+          Explore Arcade Classics & Featured Titles
+        </h1>
+        <p class="text-arcade-muted text-sm sm:text-base font-semibold">
+          Powered by Lumin SDK. Enjoy seamless gaming across device platforms with high performance.
+        </p>
+      </div>
+    </div>
+
+    <!-- Games Gallery Container -->
+    <div class="bg-arcade-card border border-arcade-border/50 rounded-2xl p-4 sm:p-6 min-h-[600px] shadow-2xl flex flex-col">
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-arcade-border/40">
+        <div class="flex items-center gap-2 font-bold text-lg text-white">
+          <i class="fa-solid fa-grip text-arcade-brand"></i>
+          <h2>Games Collection</h2>
+        </div>
+        <span class="text-xs text-arcade-muted font-semibold bg-arcade-surface px-3 py-1 rounded-lg border border-arcade-border/40">
+          Dark Theme Enabled
+        </span>
+      </div>
+
+      <!-- Lumin SDK Target Container -->
+      <div id="games" class="w-full flex-1 rounded-xl overflow-hidden min-h-[500px]"></div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-arcade-border/40 bg-arcade-card/50 mt-auto py-6 px-4 text-center text-xs text-arcade-muted font-semibold">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>© 2026 LuminArcade Hub. All games delivered via Lumin SDK.</p>
+      <div class="flex items-center gap-4 text-arcade-muted">
+        <a href="#" class="hover:text-arcade-brand transition-colors"><i class="fa-solid fa-shield-halved"></i> Privacy</a>
+        <a href="#" class="hover:text-arcade-brand transition-colors"><i class="fa-solid fa-file-contract"></i> Terms</a>
+        <a href="#" class="hover:text-arcade-brand transition-colors"><i class="fa-solid fa-circle-question"></i> Help</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Auth Modal Overlay -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center z-50 p-4 transition-opacity duration-300">
+    <div class="bg-arcade-card border border-arcade-border rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative flex flex-col gap-5">
+      
+      <!-- Close Button -->
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-arcade-muted hover:text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-arcade-surface transition-colors">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-xl bg-arcade-brand/20 border border-arcade-brand/40 text-arcade-brand flex items-center justify-center mx-auto mb-3 text-xl">
+          <i class="fa-solid fa-user-astronaut"></i>
+        </div>
+        <h2 id="modalTitle" class="text-2xl font-black text-white">Player Login</h2>
+        <p class="text-arcade-muted text-xs font-semibold mt-1">Sign in to sync your game settings & save progress</p>
+      </div>
+
+      <!-- Modal Form -->
+      <form onsubmit="handleAuth(event)" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="username" class="text-xs font-bold text-arcade-muted uppercase tracking-wider">Username</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-arcade-muted text-sm"></i>
+            <input type="text" id="username" required placeholder="Enter player username" class="w-full bg-arcade-surface border border-arcade-border rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-arcade-muted/50 focus:outline-none focus:border-arcade-brand focus:ring-1 focus:ring-arcade-brand transition-all">
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="password" class="text-xs font-bold text-arcade-muted uppercase tracking-wider">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-arcade-muted text-sm"></i>
+            <input type="password" id="password" required placeholder="••••••••" class="w-full bg-arcade-surface border border-arcade-border rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-arcade-muted/50 focus:outline-none focus:border-arcade-brand focus:ring-1 focus:ring-arcade-brand transition-all">
+          </div>
+        </div>
+
+        <button type="submit" class="mt-2 w-full py-3 rounded-xl bg-arcade-brand hover:bg-arcade-hover text-white font-extrabold text-sm transition-all shadow-lg glow-purple active:scale-[0.98]">
+          Sign In / Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Local Authentication & Session State Management
+    let currentUser = localStorage.getItem('lumin_arcade_user') || null;
+
+    function updateAuthUI() {
+      const container = document.getElementById('authContainer');
+      if (currentUser) {
+        const initial = currentUser.charAt(0).toUpperCase();
+        container.innerHTML = `
+          <div class="flex items-center gap-3 bg-arcade-surface border border-arcade-border/60 rounded-xl px-3 py-1.5">
+            <div class="w-8 h-8 rounded-lg bg-arcade-brand text-white font-extrabold flex items-center justify-center text-sm shadow">
+              ${initial}
+            </div>
+            <div class="hidden sm:flex flex-col">
+              <span class="text-xs font-extrabold text-white leading-none">${currentUser}</span>
+              <span class="text-[10px] text-arcade-accent font-semibold leading-tight">Online</span>
+            </div>
+            <button onclick="logout()" class="ml-2 text-arcade-muted hover:text-red-400 text-xs font-bold p-1 transition-colors" title="Logout">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <button onclick="openModal()" class="px-4 py-2 rounded-xl bg-arcade-brand hover:bg-arcade-hover text-white text-xs font-extrabold transition-all shadow-md active:scale-95 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            Log In / Sign Up
+          </button>
+        `;
+      }
+    }
+
+    function openModal() {
+      document.getElementById('loginModal').classList.remove('hidden');
+      document.getElementById('loginModal').classList.add('flex');
+    }
+
+    function closeModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+      document.getElementById('loginModal').classList.remove('flex');
+    }
+
+    function handleAuth(event) {
+      event.preventDefault();
+      const usernameInput = document.getElementById('username').value.trim();
+      if (usernameInput) {
+        currentUser = usernameInput;
+        localStorage.setItem('lumin_arcade_user', usernameInput);
+        updateAuthUI();
+        closeModal();
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem('lumin_arcade_user');
+      updateAuthUI();
+    }
+
+    // Initialize state on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      updateAuthUI();
+
+      // Lumin SDK Initialization
+      try {
+        if (typeof Lumin !== 'undefined' && Lumin.init) {
+          Lumin.init({
+            container: '#games',
+            theme: 'dark'
+          });
+        } else {
+          console.warn('Lumin SDK script is loading...');
+        }
+      } catch (err) {
+        console.error('Failed to initialize Lumin SDK:', err);
+      }
+    });
+  </script>
+</body>
+</html>
